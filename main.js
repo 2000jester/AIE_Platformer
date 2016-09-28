@@ -53,10 +53,11 @@ var fps = 0;
 var fpsCount = 0;
 var fpsTime = 0;
 
-var LAYER_COUNT = 3;
+var LAYER_COUNT = 4;
 var LAYER_PLATFORMS = 0;
 var LAYER_LADDERS = 1;
 var LAYER_SIGNS = 2;
+var LAYER_WATER = 3;
 
 var MAP = { tw: 20, th: 15 };
 var TILE = 35;
@@ -144,7 +145,7 @@ function initialize() {
 		for(var y = 0; y < level1.layers[layerIdx].height; y++) {
 		cells[layerIdx][y] = [];
 			for(var x = 0; x < level1.layers[layerIdx].width; x++) {
-				if(level1.layers[layerIdx].data[idx] != 0 && layerIdx != LAYER_SIGNS) {
+				if(level1.layers[layerIdx].data[idx] != 0 && layerIdx != LAYER_SIGNS && layerIdx != LAYER_WATER) {
 					// for each tile we find in the layer data, we need to create 4 collisions
 					// (because our collision squares are 35x35 but the tile in the
 					// level are 70x70)
@@ -153,9 +154,11 @@ function initialize() {
 					cells[layerIdx][y-1][x+1] = 1;
 					cells[layerIdx][y][x+1] = 1;
 				}
-				else if(cells[layerIdx][y][x] != 1) {
+				else if(cells[layerIdx][y][x] != 1 && layerIdx != LAYER_WATER) {
 					// if we haven't set this cell's value, then set it to 0 now
 					cells[layerIdx][y][x] = 0;
+				} else if(cells[layerIdx][y][x] != 1 && layerIdx != 0 && layerIdx == LAYER_WATER ) {
+					cells[layerIdx][y][x] = 3;
 				}
 				idx++;
 			}
@@ -163,6 +166,8 @@ function initialize() {
 	}
 }
 
+var heartWidth = 20
+var heartHeight = 19
 
 var player = new Player();
 var keyboard = new Keyboard();
@@ -175,6 +180,9 @@ var ACCEL = MAXDX * 2;
 var FRICTION = MAXDX * 6;
 var JUMP = METER * 1500;
 
+var heartImg = document.createElement("img");
+heartImg.src = "heart.png";
+
 function run()
 {
 	context.fillStyle = "#ccc";		
@@ -185,9 +193,17 @@ function run()
 	player.update(deltaTime);
 	drawMap();
 	player.draw();
+	context.fillStyle = "dimgrey"
+	context.fillRect(0, 0, 79, 44)
+	context.fillStyle = "black"
+	context.fillRect(0, 0, 74, 39)
 	
-		
-	// update the frame counter 
+	for (var i = 0; i < player.lives; ++i){
+		context.drawImage(heartImg, (canvas.width - canvas.width + 5) + ((heartWidth + 2) * i), 10, heartWidth, heartHeight);
+	}
+	
+	/*	
+	update the frame counter 
 	fpsTime += deltaTime;
 	fpsCount++;
 	if(fpsTime >= 1)
@@ -201,6 +217,7 @@ function run()
 	context.fillStyle = "#f00";
 	context.font="14px Arial";
 	context.fillText("FPS: " + fps, 5, 20, 100);
+	*/
 }
 
 initialize();
