@@ -287,11 +287,13 @@ Player.prototype.update = function(deltaTime){
 };
 
 Player.prototype.draw = function(){
-	this.sprite.draw(context, this.position.x, this.position.y);
-	context.fillStyle = "black"
-	context.font = '20px arial'
-	var livestext = "lives : " + this.lives
-	context.fillText(livestext, canvas.width - 80, 30)
+	this.sprite.draw(context, this.position.x - worldOffsetX, this.position.y);
+
+
+	//context.fillStyle = "black"
+	//context.font = '20px arial'
+	//var livestext = "lives : " + this.lives
+	//context.fillText(livestext, canvas.width - 80, 30)
 };
 
 Player.prototype.respawn = function(){
@@ -310,6 +312,7 @@ Player.prototype.onDeath = function(){
 	} else {
 		this.isAlive = false;
 		this.lives = 0;
+		location.reload();
 	}
 	}
 }
