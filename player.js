@@ -68,6 +68,8 @@ var Player = function() {
 	
 	this.lives = 3;
 	this.isAlive = true
+	
+	this.cooldownTimer = 0;
 	   
 };
 
@@ -149,6 +151,14 @@ Player.prototype.update = function(deltaTime){
 	if(keyboard.isKeyDown(keyboard.KEY_UP) == true) {
 			jump = true;
 		
+	}
+	if (this.cooldownTimer > 0){
+		this.cooldowntimer -= deltaTime;
+	}
+	
+	if (keyboard.isKeyDown(keyboard.KEY_SPACE) == true && this.cooldownTimer <= 0){
+		sfxFire.play();
+		this.cooldownTimer = 0.3
 	}
 	
 		
