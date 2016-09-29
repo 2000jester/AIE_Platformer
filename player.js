@@ -153,12 +153,12 @@ Player.prototype.update = function(deltaTime){
 		
 	}
 	if (this.cooldownTimer > 0){
-		this.cooldowntimer -= deltaTime;
+		this.cooldownTimer -= deltaTime;
 	}
 	
 	if (keyboard.isKeyDown(keyboard.KEY_SPACE) == true && this.cooldownTimer <= 0){
 		sfxFire.play();
-		this.cooldownTimer = 0.3
+		this.cooldownTimer = 0.3;
 	}
 	
 		

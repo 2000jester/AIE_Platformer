@@ -189,7 +189,7 @@ function initialize() {
 		urls: ["background.ogg"],
 		loop: true,
 		buffer: true,
-		volume: 0.5
+		volume: 0.3
 	
 	});
 	musicBackground.play();
