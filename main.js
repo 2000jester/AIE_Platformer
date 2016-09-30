@@ -39,7 +39,13 @@ function getDeltaTime()
 
 
 
+var canPause = false;
+var isPaused = false;
+var wasPaused = false;
+var enemies = [];
 
+
+var LAYER_OBJECT_TRIGGERS = 5;
 
 
 var SCREEN_WIDTH = canvas.width;
@@ -53,11 +59,12 @@ var fps = 0;
 var fpsCount = 0;
 var fpsTime = 0;
 
-var LAYER_COUNT = 4;
+var LAYER_COUNT = 5;
 var LAYER_PLATFORMS = 0;
 var LAYER_LADDERS = 1;
 var LAYER_SIGNS = 2;
 var LAYER_WATER = 3;
+var LAYER_OBJECT_ENEMIES = 4;
 
 var MAP = { tw: 80, th: 15 };
 var TILE = 35;
@@ -145,10 +152,12 @@ function drawMap()
 				{
 				// the tiles in the Tiled map are base 1 (meaning a value of 0 means no tile), so subtract one from the tileset id to get the
 				// correct tile
-				var tileIndex = level1.layers[layerIdx].data[idx] - 1;
-				var sx = TILESET_PADDING + (tileIndex % TILESET_COUNT_X) * (TILESET_TILE + TILESET_SPACING);
-				var sy = TILESET_PADDING + (Math.floor(tileIndex / TILESET_COUNT_X)) * (TILESET_TILE + TILESET_SPACING);
-				context.drawImage(tileset, sx, sy, TILESET_TILE, TILESET_TILE, (x - startX)*TILE - offsetX, (y-1)*TILE, TILESET_TILE, TILESET_TILE);
+				if(layerIdx != LAYER_OBJECT_ENEMIES){
+					var tileIndex = level1.layers[layerIdx].data[idx] - 1;
+					var sx = TILESET_PADDING + (tileIndex % TILESET_COUNT_X) * (TILESET_TILE + TILESET_SPACING);
+					var sy = TILESET_PADDING + (Math.floor(tileIndex / TILESET_COUNT_X)) * (TILESET_TILE + TILESET_SPACING);
+					context.drawImage(tileset, sx, sy, TILESET_TILE, TILESET_TILE, (x - startX)*TILE - offsetX, (y-1)*TILE, TILESET_TILE, TILESET_TILE);	
+					}
 				}
 				idx++;
 			}
@@ -160,6 +169,23 @@ var musicBackground;
 var sfxFire;
 var cells = []; // the array that holds our simplified collision data
 function initialize() {
+	
+	// add enemies
+	idx = 0;
+	for(var y = 0; y < level1.layers[LAYER_OBJECT_ENEMIES].height; y++) {
+	for(var x = 0; x < level1.layers[LAYER_OBJECT_ENEMIES].width; x++) {
+	if(level1.layers[LAYER_OBJECT_ENEMIES].data[idx] != 0) {
+	var px = tileToPixel(x);
+	var py = tileToPixel(y);
+	var e = new Enemy(px, py);
+	enemies.push(e);
+	}
+	idx++;
+	}
+	} 
+	
+	
+	
 	for(var layerIdx = 0; layerIdx < LAYER_COUNT; layerIdx++) { // initialize the collision map
 		cells[layerIdx] = [];
 		var idx = 0;
@@ -217,27 +243,60 @@ var ACCEL = MAXDX * 2;
 var FRICTION = MAXDX * 6;
 var JUMP = METER * 1500;
 
+var ENEMY_MAXDX = METER * 5;
+var ENEMY_ACCEL = ENEMY_MAXDX * 2;
+
 var heartImg = document.createElement("img");
 heartImg.src = "heart.png";
 
-function run()
-{
+function run(){	
+	var deltaTime = getDeltaTime();
+
+	if(keyboard.isKeyDown(keyboard.KEY_DELETE) == true){
+	if (!wasPaused){
+		isPaused = !isPaused
+		wasPaused = true;
+	}
+	} else {
+		wasPaused = false;
+	}
+		
+	if (isPaused == true){
+		context.fillStyle = "Black"
+		context.font ="50px comic sans ms";
+		context.fillText("PAUSED", (canvas.width / 2) - 100, canvas.height / 2)
+	} else {
+		
+		
 	context.fillStyle = "#ccc";		
 	context.fillRect(0, 0, canvas.width, canvas.height);
 	
-	var deltaTime = getDeltaTime();
+	
 	
 	player.update(deltaTime);
 	drawMap();
 	player.draw();
-	context.fillStyle = "dimgrey"
-	context.fillRect(0, 0, 79, 44)
-	context.fillStyle = "black"
-	context.fillRect(0, 0, 74, 39)
+	
+	/*for (var i =0; i<enemies.length; i++){
+	playerenemycollision(player.position.x, player.position.y, enemies[i].position.x, enemies[i].position.y, player.isAlive, playerLives);	
+		}*/
+	
+	for(var i=0; i<enemies.length; i++)
+	{
+	enemies[i].update(deltaTime, i);
+	enemies[i].draw();
+	}
+	
+	context.fillStyle = "dimgrey";
+	context.fillRect(0, 0, 79, 44);
+	context.fillStyle = "black";
+	context.fillRect(0, 0, 74, 39);
 	
 	for (var i = 0; i < player.lives; ++i){
 		context.drawImage(heartImg, (canvas.width - canvas.width + 5) + ((heartWidth + 2) * i), 10, heartWidth, heartHeight);
 	}
+	
+	//wasPaused = isPaused
 	
 	/*	
 	update the frame counter 
@@ -255,6 +314,7 @@ function run()
 	context.font="14px Arial";
 	context.fillText("FPS: " + fps, 5, 20, 100);
 	*/
+	}
 }
 
 initialize();
